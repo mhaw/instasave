@@ -1,0 +1,9 @@
+fastapi
+uvicorn
+jinja2
+pydantic
+requests
+python-dotenv
+pytest
+instagrapi==1.18.1
+Pillow

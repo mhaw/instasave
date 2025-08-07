@@ -1,0 +1,27 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+
+# IDEs
+.vscode/
+.idea/
+
+# OS specific
+.DS_Store
+.Trashes
+Thumbs.db
+
+# Docker
+*.dockerignore
+
+# Project specific
+.env
+data/*.db
+media/
+logs/
+.pytest_cache/
