@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+
+{% block title %}InstaSave - Scrape History{% endblock %}
+
+{% block content %}
+    <h1 class="text-2xl mb-4">Scrape History</h1>
+    <table class="table-auto w-full">
+      <thead>
+        <tr>
+          <th class="text-left">Log</th>
+          <th class="text-left">Date</th>
+          <th>Total Posts</th>
+          <th>Errors</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for entry in entries %}
+        <tr class="border-t">
+          <td>{{ entry.filename }}</td>
+          <td>{{ entry.timestamp }}</td>
+          <td>{{ entry.total }}</td>
+          <td class="{% if entry.errors > 0 %}text-red-500{% endif %}">{{ entry.errors }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+{% endblock %}

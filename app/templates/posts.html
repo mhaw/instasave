@@ -1,17 +1,31 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>InstaSave - Saved Posts</title>
+{% extends "base.html" %}
+
+{% block title %}InstaSave - Saved Posts{% endblock %}
+
+{% block head %}
     <style>
-        body { font-family: Arial, sans-serif; margin: 20px; background-color: #f4f4f4; color: #333; }
-        .container { max-width: 900px; margin: auto; background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-        h1 { color: #555; text-align: center; margin-bottom: 20px; }
-        .search-form { text-align: center; margin-bottom: 30px; }
-        .search-form input[type="text"] { padding: 10px; width: 60%; max-width: 400px; border: 1px solid #ddd; border-radius: 4px; }
-        .search-form input[type="submit"] { padding: 10px 15px; background-color: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; }
-        .search-form input[type="submit"]:hover { background-color: #0056b3; }
+        .search-form {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .search-form input[type="text"] {
+            padding: 10px;
+            width: 60%;
+            max-width: 400px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .search-form input[type="submit"] {
+            padding: 10px 15px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .search-form input[type="submit"]:hover {
+            background-color: #0056b3;
+        }
         .post-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
@@ -126,67 +140,69 @@
             .container { margin: 10px; padding: 15px; }
         }
     </style>
-</head>
-<body>
-    <div class="container">
-        <h1>Saved Instagram Posts</h1>
+{% endblock %}
 
-        <form action="/posts" method="get" class="search-form">
-            <input type="text" name="q" placeholder="Search captions..." value="{{ query }}">
-            <input type="submit" value="Search">
-        </form>
+{% block content %}
+    <h1>Saved Instagram Posts</h1>
 
-        <div class="sort-form" style="text-align: center; margin-bottom: 20px;">
-            <label for="sortOrder">Sort by:</label>
-            <select id="sortOrder" onchange="this.form.submit()" name="sort_order">
-                <option value="desc" {% if sort_order == "desc" %}selected{% endif %}>Newest First</option>
-                <option value="asc" {% if sort_order == "asc" %}selected{% endif %}>Oldest First</option>
-            </select>
-            <input type="hidden" name="q" value="{{ query }}">
-            <input type="hidden" name="page" value="{{ current_page }}">
-            <input type="hidden" name="limit" value="{{ limit }}">
-        </div>
+    <form method="get" action="/posts" class="mb-4 flex gap-2">
+        <input type="text" name="q" value="{{ request.query_params.get('q', '') }}"
+               placeholder="Search tags or captions"
+               class="border p-2 w-64 rounded" />
+        <input type="hidden" name="page" value="1" />
+        <button class="bg-blue-600 text-white px-4 py-2 rounded">Search</button>
+    </form>
 
-        {% if posts %}
-            <div class="post-grid">
-                {% for post in posts %}
-                                        <div class="post-item" data-media-path="/media/{{ post.media_path.split('/', 1)[1] }}" data-media-type="{% if post.media_path.endswith(('.mp4', '.mov', '.avi', '.mkv')) %}video{% else %}image{% endif %}">
-                        {% if post.media_path.endswith(('.mp4', '.mov', '.avi', '.mkv')) %}
-                            <video controls>
-                                <source src="/media/{{ post.media_path.split('/', 1)[1] }}" type="video/mp4">
-                                Your browser does not support the video tag.
-                            </video>
-                        {% else %}
-                            <img src="/media/{{ post.media_path.split('/', 1)[1] }}" alt="{{ post.caption[:50] if post.caption else 'Instagram Post' }}">
-                        {% endif %}
-                        <div class="post-content">
-                            <p class="caption-preview">{{ post.caption | truncate(100, True, '...') if post.caption else 'No caption' }}</p>
-                            {% if post.caption and post.caption | length > 100 %}
-                                <button class="show-more-btn">Show More</button>
-                            {% endif %}
-                            <p class="full-caption" style="display: none;">{{ post.caption if post.caption else 'No caption' }}</p>
-                            {% if post.tags %}
-                                <p class="post-tags"><strong>Tags:</strong> {{ post.tags }}</p>
-                            {% endif %}
-                            <p><a href="{{ post.post_url }}" target="_blank">View Original Post</a></p>
-                            <p class="post-date">Saved on: {{ post.download_date }}</p>
-                        </div>
-                    </div>
-                {% endfor %}
-            </div>
-            <div class="pagination" style="text-align: center; margin-top: 20px;">
-                {% if current_page > 1 %}
-                    <a href="/posts?q={{ query }}&page={{ current_page - 1 }}&limit={{ limit }}" style="margin-right: 10px; text-decoration: none; color: #007bff;">Previous</a>
-                {% endif %}
-                <span>Page {{ current_page }} of {{ total_pages }}</span>
-                {% if current_page < total_pages %}
-                    <a href="/posts?q={{ query }}&page={{ current_page + 1 }}&limit={{ limit }}" style="margin-left: 10px; text-decoration: none; color: #007bff;">Next</a>
-                {% endif %}
-            </div>
-        {% else %}
-            <p class="no-posts">No posts found.</p>
-        {% endif %}
+    <div class="sort-form" style="text-align: center; margin-bottom: 20px;">
+        <label for="sortOrder">Sort by:</label>
+        <select id="sortOrder" onchange="this.form.submit()" name="sort_order">
+            <option value="desc" {% if sort_order == "desc" %}selected{% endif %}>Newest First</option>
+            <option value="asc" {% if sort_order == "asc" %}selected{% endif %}>Oldest First</option>
+        </select>
+        <input type="hidden" name="q" value="{{ query }}">
+        <input type="hidden" name="page" value="{{ current_page }}">
+        <input type="hidden" name="limit" value="{{ limit }}">
     </div>
+
+    {% if posts %}
+        <div class="post-grid">
+            {% for post in posts %}
+                <div class="post-item" data-media-path="/media/{{ post.display_media_path }}" data-media-type="{% if post.media_path.endswith(('.mp4', '.mov', '.avi', '.mkv')) %}video{% else %}image{% endif %}">
+                    {% if post.media_path.endswith(('.mp4', '.mov', '.avi', '.mkv')) %}
+                        <video controls>
+                            <source src="/media/{{ post.display_media_path }}" type="video/mp4">
+                            Your browser does not support the video tag.
+                        </video>
+                    {% else %}
+                        <img src="/media/{{ post.display_media_path }}" alt="{{ post.caption[:50] if post.caption else 'Instagram Post' }}">
+                    {% endif %}
+                    <div class="post-content">
+                        <p class="caption-preview">{{ post.caption | truncate(100, True, '...') if post.caption else 'No caption' }}</p>
+                        {% if post.caption and post.caption | length > 100 %}
+                            <button class="show-more-btn">Show More</button>
+                        {% endif %}
+                        <p class="full-caption" style="display: none;">{{ post.caption if post.caption else 'No caption' }}</p>
+                        {% if post.tags %}
+                            <p class="post-tags"><strong>Tags:</strong> {{ post.tags }}</p>
+                        {% endif %}
+                        <p><a href="{{ post.post_url }}" target="_blank">View Original Post</a></p>
+                        <p class="post-date">Saved on: {{ post.download_date }}</p>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+        <div class="pagination" style="text-align: center; margin-top: 20px;">
+            {% if current_page > 1 %}
+                <a href="/posts?q={{ query }}&page={{ current_page - 1 }}&limit={{ limit }}" style="margin-right: 10px; text-decoration: none; color: #007bff;">Previous</a>
+            {% endif %}
+            <span>Page {{ current_page }} of {{ total_pages }}</span>
+            {% if current_page < total_pages %}
+                <a href="/posts?q={{ query }}&page={{ current_page + 1 }}&limit={{ limit }}" style="margin-left: 10px; text-decoration: none; color: #007bff;">Next</a>
+            {% endif %}
+        </div>
+    {% else %}
+        <p class="no-posts">No posts found.</p>
+    {% endif %}
 
     <!-- Lightbox HTML -->
     <div class="lightbox-overlay" id="lightboxOverlay">
@@ -195,7 +211,9 @@
             <div id="lightboxMedia"></div>
         </div>
     </div>
+{% endblock %}
 
+{% block scripts %}
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const postItems = document.querySelectorAll('.post-item');
@@ -273,5 +291,4 @@
             });
         });
     </script>
-</body>
-</html>
+{% endblock %}

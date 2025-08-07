@@ -42,21 +42,21 @@ scraping_thread = None
 
 import re
 
-def download_media(media: Media, timestamp: datetime):
+def _download_single_media(media_item: Media, timestamp: datetime):
     try:
-        if not media.thumbnail_url:
+        if not media_item.thumbnail_url:
             return ""
         date_folder = timestamp.strftime("%Y-%m-%d")
         save_dir = MEDIA_DIR / date_folder
         save_dir.mkdir(parents=True, exist_ok=True)
 
-        filename = media.pk
+        filename = media_item.pk
         extension = "jpg" # Default to jpg
-        if media.media_type == 2 and media.video_url:
+        if media_item.media_type == 2 and media_item.video_url:
             extension = "mp4"
-            url = media.video_url
+            url = media_item.video_url
         else:
-            url = media.thumbnail_url
+            url = media_item.thumbnail_url
 
         local_path = save_dir / f"{filename}.{extension}"
 
@@ -67,14 +67,28 @@ def download_media(media: Media, timestamp: datetime):
             vprint(f"Downloaded media to {local_path}")
         return str(local_path)
     except Exception as e:
-        logger.error(f"Failed to download media for post {media.pk}: {e}")
+        logger.error(f"Failed to download media for post {media_item.pk}: {e}")
         return ""
+
+def download_media(post: Media, timestamp: datetime):
+    media_paths = []
+    if post.media_type == 8: # Carousel
+        if hasattr(post, 'carousel_media') and post.carousel_media:
+            for media_item in post.carousel_media:
+                path = _download_single_media(media_item, timestamp)
+                if path:
+                    media_paths.append(path)
+    else: # Single photo or video
+        path = _download_single_media(post, timestamp)
+        if path:
+            media_paths.append(path)
+    return ",".join(media_paths)
 
 def save_post_to_db(post: Media):
     try:
         conn = sqlite3.connect(DB_FILE)
         cursor = conn.cursor()
-        media_path = download_media(post, post.taken_at)
+        media_paths_str = download_media(post, post.taken_at)
 
         # Extract hashtags
         caption_text = post.caption_text if post.caption_text else ""
@@ -88,7 +102,7 @@ def save_post_to_db(post: Media):
             f"https://www.instagram.com/p/{post.code}/",
             post.pk,
             caption_text,
-            media_path,
+            media_paths_str,
             post.taken_at.isoformat(),
             tags_str
         ))
@@ -130,13 +144,33 @@ def scrape_saved_posts(date_range):
         cl.login(IG_USERNAME, IG_PASSWORD)
         vprint("Login successful.")
 
-        update_status({"current": "fetching_saved_posts"})
         saved_posts = []
-        collections = cl.collections()
-        for collection in collections:
-            vprint(f"Fetching posts from collection: {collection.name}")
-            medias = cl.collection_medias(collection.id)
-            saved_posts.extend(medias)
+        if date_range == "most_recent":
+            # Logic to get only the most recent post
+            # This might involve fetching a small number of posts and taking the newest one
+            # For simplicity, let's fetch the first collection and take the newest media
+            collections = cl.collections()
+            if collections:
+                medias = cl.collection_medias(collections[0].id)
+                if medias:
+                    saved_posts.append(medias[0]) # Assuming the first media is the most recent
+        elif date_range == "last_hour":
+            # Logic to get posts from the last hour
+            # This would require iterating through collections and checking post.taken_at
+            # For simplicity, we'll just fetch all and filter later (less efficient but works for now)
+            collections = cl.collections()
+            for collection in collections:
+                medias = cl.collection_medias(collection.id)
+                for media in medias:
+                    if (datetime.now() - media.taken_at).total_seconds() <= 3600:
+                        saved_posts.append(media)
+        else: # "all", "day", "month" or any other existing range
+            update_status({"current": "fetching_saved_posts"})
+            collections = cl.collections()
+            for collection in collections:
+                vprint(f"Fetching posts from collection: {collection.name}")
+                medias = cl.collection_medias(collection.id)
+                saved_posts.extend(medias)
 
         vprint(f"Found {len(saved_posts)} saved posts.")
         update_status({"total": len(saved_posts)})

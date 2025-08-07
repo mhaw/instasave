@@ -1,27 +1,32 @@
-<html>
-<head>
-  <meta http-equiv="refresh" content="2">
-  <style>
-    body { font-family: monospace; padding: 20px; }
-    .bar-container { width: 100%; background: #eee; }
-    .bar { height: 25px; background: #4caf50; }
-    #log-output { background:#111; color:#0f0; padding:1rem; border-radius:8px; white-space: pre-wrap; }
-  </style>
-</head>
-<body>
-  <h2>Scraping Progress</h2>
-  <pre>{{ status }}</pre>
+{% extends "base.html" %}
 
-  <h3>Scraper Log</h3>
-  <pre id="log-output">{{ log_content }}</pre>
+{% block title %}InstaSave - Scrape Status{% endblock %}
 
-  <script>
-    // This JS function won't accumulate logs due to page refresh,
-    // but is included as per instructions.
-    const logEl = document.getElementById('log-output');
-    function appendLog(msg) {
-      logEl.textContent += new Date().toLocaleTimeString() + ' - ' + msg + '\n';
-    }
-  </script>
-</body>
-</html>
+{% block head %}
+    <meta http-equiv="refresh" content="2">
+    <style>
+        body { font-family: monospace; padding: 20px; }
+        .bar-container { width: 100%; background: #eee; }
+        .bar { height: 25px; background: #4caf50; }
+        #log-output { background:#111; color:#0f0; padding:1rem; border-radius:8px; white-space: pre-wrap; }
+    </style>
+{% endblock %}
+
+{% block content %}
+    <h2>Scraping Progress</h2>
+    <pre>{{ status }}</pre>
+
+    <h3>Scraper Log</h3>
+    <pre id="log-output">{{ log_content }}</pre>
+{% endblock %}
+
+{% block scripts %}
+    <script>
+        // This JS function won't accumulate logs due to page refresh,
+        // but is included as per instructions.
+        const logEl = document.getElementById('log-output');
+        function appendLog(msg) {
+            logEl.textContent += new Date().toLocaleTimeString() + ' - ' + msg + '\n';
+        }
+    </script>
+{% endblock %}

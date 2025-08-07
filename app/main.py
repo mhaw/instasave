@@ -1,5 +1,5 @@
 from fastapi import FastAPI, Request, BackgroundTasks
-from fastapi.responses import Response, HTMLResponse, JSONResponse
+from fastapi.responses import Response, HTMLResponse, JSONResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
 import logging
@@ -10,6 +10,7 @@ from .scraper import start_scraping_thread
 from .database import init_db
 from .status_tracker import get_status
 import json
+from pathlib import Path
 
 app = FastAPI()
 templates = Jinja2Templates(directory="app/templates")
@@ -24,6 +25,23 @@ async def startup_event():
     logging.basicConfig(level=logging.INFO)
     logging.info("Database initialized.")
 
+@app.get("/scrape/history", response_class=HTMLResponse)
+async def scrape_history(request: Request):
+    entries = []
+    log_dir = Path("logs")
+    for log_file in sorted(log_dir.glob("*.json"), reverse=True):
+        data = json.loads(log_file.read_text())
+        entries.append({
+            "filename": log_file.name,
+            "timestamp": data.get("timestamp", "unknown"),
+            "total": len(data.get("posts", [])),
+            "errors": len([p for p in data.get("posts", []) if p.get("error")]),
+        })
+    return templates.TemplateResponse("scrape_history.html", {
+        "request": request,
+        "entries": entries,
+    })
+
 @app.get("/", response_class=HTMLResponse)
 async def read_root(request: Request):
     return templates.TemplateResponse("index.html", {"request": request})
@@ -33,7 +51,7 @@ async def run_scraper_endpoint(request: Request, background_tasks: BackgroundTas
     data = await request.json()
     date_range = data.get("date_range", "all")
     background_tasks.add_task(start_scraping_thread, date_range)
-    return {"message": f"Scraping for {date_range} started in the background."}
+    return RedirectResponse("/scrape/status/live", status_code=302)
 
 @app.get("/scrape/status", response_class=JSONResponse)
 async def scrape_status():
@@ -59,38 +77,48 @@ def live_status(request: Request):
     )
 
 
-@app.get("/posts", response_class=HTMLResponse)
-async def view_posts(request: Request, q: str = "", page: int = 1, limit: int = 50, sort_order: str = "desc"):
+def load_scrape_log():
     conn = sqlite3.connect("data/instasave.db")
     conn.row_factory = sqlite3.Row
     cursor = conn.cursor()
+    cursor.execute("SELECT * FROM saved_posts ORDER BY id DESC")
+    posts = cursor.fetchall()
+    conn.close()
+    return [dict(post) for post in posts]
 
-    offset = (page - 1) * limit
+@app.get("/posts", response_class=HTMLResponse)
+async def view_posts(request: Request, q: str = "", page: int = 1, limit: int = 50, sort_order: str = "desc"):
+    posts = load_scrape_log()
+    print(f"Type of posts list: {type(posts)}")
 
-    order_by = "DESC" if sort_order == "desc" else "ASC"
+    for post in posts:
+        print(f"Type of individual post: {type(post)}")
+        # Create a new field with the correct relative path for the template
+        post["display_media_path"] = post["media_path"].replace("media/", "")
 
     if q:
-        cursor.execute(f"SELECT * FROM saved_posts WHERE caption LIKE ? ORDER BY id {order_by} LIMIT ? OFFSET ?", (f"%{q}%", limit, offset))
-        total_posts_cursor = conn.execute("SELECT COUNT(*) FROM saved_posts WHERE caption LIKE ?", (f"%{q}%",))
-    else:
-        cursor.execute(f"SELECT * FROM saved_posts ORDER BY id {order_by} LIMIT ? OFFSET ?", (limit, offset))
-        total_posts_cursor = conn.execute("SELECT COUNT(*) FROM saved_posts")
-    
-    results = cursor.fetchall()
-    total_posts = total_posts_cursor.fetchone()[0]
-    conn.close()
+        q_lower = q.lower()
+        posts = [p for p in posts if q_lower in p["caption"].lower() or (p["tags"] and q_lower in p["tags"].lower())]
 
-    total_pages = (total_posts + limit - 1) // limit
+    # Apply sorting based on sort_order
+    if sort_order == "asc":
+        posts.reverse() # Since load_scrape_log fetches DESC, reverse for ASC
+
+    POSTS_PER_PAGE = 20 # As per new instructions
+    start = (page - 1) * POSTS_PER_PAGE
+    end = start + POSTS_PER_PAGE
+    paginated_posts = posts[start:end]
+    total_pages = (len(posts) + POSTS_PER_PAGE - 1) // POSTS_PER_PAGE
 
     return templates.TemplateResponse(
         "posts.html",
         {
             "request": request,
-            "posts": results,
+            "posts": paginated_posts,
             "query": q,
             "current_page": page,
             "total_pages": total_pages,
-            "limit": limit,
+            "limit": POSTS_PER_PAGE, # Use POSTS_PER_PAGE as the limit
             "sort_order": sort_order
         }
     )
