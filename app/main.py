@@ -81,10 +81,28 @@ def load_scrape_log():
     conn = sqlite3.connect("data/instasave.db")
     conn.row_factory = sqlite3.Row
     cursor = conn.cursor()
-    cursor.execute("SELECT * FROM saved_posts ORDER BY id DESC")
+    cursor.execute("""
+        SELECT 
+            p.id, p.post_url, p.caption, p.download_date, p.tags,
+            GROUP_CONCAT(pm.media_path) as media_paths
+        FROM saved_posts p
+        LEFT JOIN post_media pm ON p.id = pm.post_id
+        GROUP BY p.id
+        ORDER BY p.id DESC
+    """)
     posts = cursor.fetchall()
     conn.close()
-    return [dict(post) for post in posts]
+    
+    results = []
+    for post in posts:
+        post_dict = dict(post)
+        if post_dict['media_paths']:
+            post_dict['media_paths'] = post_dict['media_paths'].split(',')
+        else:
+            post_dict['media_paths'] = []
+        post_dict["display_media_path"] = post_dict['media_paths'][0] if post_dict['media_paths'] else ''
+        results.append(post_dict)
+    return results
 
 @app.get("/posts", response_class=HTMLResponse)
 async def view_posts(request: Request, q: str = "", page: int = 1, limit: int = 50, sort_order: str = "desc"):
@@ -93,8 +111,6 @@ async def view_posts(request: Request, q: str = "", page: int = 1, limit: int = 
 
     for post in posts:
         print(f"Type of individual post: {type(post)}")
-        # Create a new field with the correct relative path for the template
-        post["display_media_path"] = post["media_path"].replace("media/", "")
 
     if q:
         q_lower = q.lower()

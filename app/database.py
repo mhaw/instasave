@@ -9,8 +9,16 @@ def init_db():
             post_url TEXT NOT NULL,
             post_pk INTEGER NOT NULL UNIQUE,
             caption TEXT,
-            media_path TEXT,
-            download_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            download_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            tags TEXT
+        )
+    """)
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS post_media (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            post_id INTEGER NOT NULL,
+            media_path TEXT NOT NULL,
+            FOREIGN KEY (post_id) REFERENCES saved_posts (id)
         )
     """)
     conn.commit()

@@ -88,7 +88,6 @@ def save_post_to_db(post: Media):
     try:
         conn = sqlite3.connect(DB_FILE)
         cursor = conn.cursor()
-        media_paths_str = download_media(post, post.taken_at)
 
         # Extract hashtags
         caption_text = post.caption_text if post.caption_text else ""
@@ -96,22 +95,33 @@ def save_post_to_db(post: Media):
         tags_str = ",".join(hashtags) # Store as comma-separated string
 
         cursor.execute("""
-            INSERT OR IGNORE INTO saved_posts (post_url, post_pk, caption, media_path, download_date, tags)
-            VALUES (?, ?, ?, ?, ?, ?)
+            INSERT OR IGNORE INTO saved_posts (post_url, post_pk, caption, download_date, tags)
+            VALUES (?, ?, ?, ?, ?)
         """, (
             f"https://www.instagram.com/p/{post.code}/",
             post.pk,
             caption_text,
-            media_paths_str,
             post.taken_at.isoformat(),
             tags_str
         ))
         conn.commit()
-        conn.close()
+
         if cursor.rowcount > 0:
+            post_id = cursor.lastrowid
+            media_paths = download_media(post, post.taken_at)
+            for media_path in media_paths.split(','):
+                if media_path:
+                    cursor.execute("""
+                        INSERT INTO post_media (post_id, media_path)
+                        VALUES (?, ?)
+                    """, (post_id, media_path))
+            conn.commit()
             vprint(f"Saved post to DB: {post.code}")
         else:
             logger.warning(f"Post already exists in DB: {post.code}")
+
+        conn.close()
+
     except Exception as e:
         logger.error(f"Error saving post to DB: {e}")
 

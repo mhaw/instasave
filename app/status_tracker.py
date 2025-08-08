@@ -8,5 +8,7 @@ def update_status(data: dict):
 
 def get_status() -> dict:
     if STATUS_PATH.exists():
-        return json.loads(STATUS_PATH.read_text())
+        content = STATUS_PATH.read_text().strip()
+        if content:
+            return json.loads(content)
     return {"message": "Status not initialized."}
