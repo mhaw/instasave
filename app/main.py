@@ -46,6 +46,7 @@ templates.env.filters["ts"] = format_timestamp
 
 app.mount("/media", StaticFiles(directory=settings.MEDIA_ROOT), name="media")
 app.mount("/static", StaticFiles(directory="app/static"), name="static")
+app.mount("/static/elements", StaticFiles(directory="app/static/elements"), name="static_elements")
 # GEMINI-END: imports-and-setup
 
 
@@ -265,7 +266,7 @@ def get_logs() -> Response:
 # GEMINI-TARGET: favicon v1
 @app.get("/favicon.ico")
 def favicon() -> FileResponse:
-    path = Path("static/favicon.ico")
+    path = Path("app/static/elements/instasave_favicon.png")
     if path.is_file():
         return FileResponse(path)
     # Return 204 if not provided, avoids 404 noise in logs
