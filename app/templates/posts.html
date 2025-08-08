@@ -1,243 +1,39 @@
 {% extends "base.html" %}
+{% from '_macros.html' import render_post_card, render_pagination with context %}
 
 {% block title %}InstaSave - Saved Posts{% endblock %}
 
 {% block head %}
-    <style>
-        .search-form {
-            text-align: center;
-            margin-bottom: 30px;
-        }
-        .search-form input[type="text"] {
-            padding: 10px;
-            width: 60%;
-            max-width: 400px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-        }
-        .search-form input[type="submit"] {
-            padding: 10px 15px;
-            background-color: #007bff;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-        }
-        .search-form input[type="submit"]:hover {
-            background-color: #0056b3;
-        }
-        .post-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-            gap: 20px;
-        }
-        .post-item {
-            background: #fff;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            overflow: hidden;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            display: flex;
-            flex-direction: column;
-            cursor: pointer; /* Indicate clickable */
-        }
-        .post-item img {
-            width: 100%;
-            height: 250px;
-            object-fit: cover;
-            display: block;
-        }
-        .post-item video {
-            width: 100%;
-            height: 250px;
-            object-fit: contain; /* Changed from cover to contain for videos */
-            display: block;
-        }
-        .media-gallery {
-            display: flex;
-            overflow-x: scroll;
-            gap: 0.5rem;
-            padding-bottom: 0.5rem; /* Space for scrollbar */
-        }
-        .media-gallery::-webkit-scrollbar {
-            height: 8px;
-        }
-        .media-gallery::-webkit-scrollbar-thumb {
-            background-color: #ccc;
-            border-radius: 4px;
-        }
-        .media-gallery::-webkit-scrollbar-track {
-            background-color: #f1f1f1;
-        }
-        .media-gallery .slide {
-            flex-shrink: 0;
-            width: 100%; /* Take full width of post-item */
-            height: 250px; /* Match post-item media height */
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-        .media-gallery .slide img, .media-gallery .slide video {
-            max-width: 100%;
-            max-height: 100%;
-            object-fit: contain; /* Ensure media fits within slide */
-            border-radius: 8px;
-        }
-        .post-content {
-            padding: 15px;
-            flex-grow: 1; /* Allows content to take up available space */
-            display: flex;
-            flex-direction: column;
-        }
-        .post-content p { font-size: 0.9em; color: #666; margin-bottom: 10px; white-space: pre-wrap; }
-        .post-content a { color: #007bff; text-decoration: none; word-break: break-all; }
-        .post-content a:hover { text-decoration: underline; }
-        .post-date { font-size: 0.8em; color: #999; margin-top: auto; /* Pushes date to the bottom */ }
-        .no-posts { text-align: center; color: #777; }
-
-        /* Pagination styles */
-        .pagination {
-            text-align: center;
-            margin-top: 20px;
-            padding-top: 10px;
-            border-top: 1px solid #eee;
-        }
-        .pagination a {
-            margin: 0 10px;
-            text-decoration: none;
-            color: #007bff;
-            font-weight: bold;
-        }
-        .pagination a:hover { text-decoration: underline; }
-        .pagination span { color: #555; }
-
-        /* Lightbox styles */
-        .lightbox-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.8);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-            visibility: hidden;
-            opacity: 0;
-            transition: opacity 0.3s, visibility 0.3s;
-        }
-        .lightbox-overlay.visible {
-            visibility: visible;
-            opacity: 1;
-        }
-        .lightbox-content {
-            max-width: 90%;
-            max-height: 90%;
-            background: #fff;
-            padding: 20px;
-            border-radius: 8px;
-            position: relative;
-            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
-        }
-        .lightbox-content img, .lightbox-content video {
-            max-width: 100%;
-            max-height: 70vh; /* Limit height to prevent overflow */
-            display: block;
-            margin: auto;
-        }
-        .lightbox-close {
-            position: absolute;
-            top: 10px;
-            right: 20px;
-            font-size: 30px;
-            color: #333;
-            cursor: pointer;
-            text-decoration: none;
-        }
-
-        /* Responsive adjustments */
-        @media (max-width: 768px) {
-            .post-grid {
-                grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-            }
-        }
-
-        @media (max-width: 480px) {
-            .post-grid {
-                grid-template-columns: 1fr;
-            }
-            .container { margin: 10px; padding: 15px; }
-        }
-    </style>
+    <link rel="stylesheet" href="{{ url_for('static', path='css/posts.css') }}">
 {% endblock %}
 
 {% block content %}
     <h1>Saved Instagram Posts</h1>
 
-    <form method="get" action="/posts" class="mb-4 flex gap-2">
+    <form method="get" action="/posts" class="mb-4 flex gap-2 items-center">
         <input type="text" name="q" value="{{ request.query_params.get('q', '') }}"
                placeholder="Search tags or captions"
                class="border p-2 w-64 rounded" />
-        <input type="hidden" name="page" value="1" />
-        <button class="bg-blue-600 text-white px-4 py-2 rounded">Search</button>
-    </form>
-
-    <div class="sort-form" style="text-align: center; margin-bottom: 20px;">
-        <label for="sortOrder">Sort by:</label>
-        <select id="sortOrder" onchange="this.form.submit()" name="sort_order">
+        <label for="sortOrder" class="ml-4">Sort by:</label>
+        <select id="sortOrder" name="sort_order" onchange="this.form.submit()">
             <option value="desc" {% if sort_order == "desc" %}selected{% endif %}>Newest First</option>
             <option value="asc" {% if sort_order == "asc" %}selected{% endif %}>Oldest First</option>
         </select>
-        <input type="hidden" name="q" value="{{ query }}">
-        <input type="hidden" name="page" value="{{ current_page }}">
-        <input type="hidden" name="limit" value="{{ limit }}">
-    </div>
+        <button class="bg-blue-600 text-white px-4 py-2 rounded">Search</button>
+    </form>
 
     {% if posts %}
         <div class="post-grid">
             {% for post in posts %}
-                <div class="post-item" data-media-path="/media/{{ post.display_media_path if post.display_media_path else '' }}" data-media-type="{% if post.media_paths and post.media_paths[0].endswith(('.mp4', '.mov', '.avi', '.mkv')) %}video{% else %}image{% endif %}">
-                    <div class="media-gallery">
-                        {% for media_item_path in post.media_paths %}
-                            <div class="slide">
-                                {% if media_item_path.endswith(('.mp4', '.mov', '.avi', '.mkv')) %}
-                                    <video controls>
-                                        <source src="/media/{{ media_item_path }}" type="video/mp4">
-                                        Your browser does not support the video tag.
-                                    </video>
-                                {% else %}
-                                    <img src="/media/{{ media_item_path }}" alt="{{ post.caption[:50] if post.caption else 'Instagram Post' }}">
-                                {% endif %}
-                            </div>
-                        {% endfor %}
-                    </div>
-                    <div class="post-content">
-                        <p class="caption-preview">{{ post.caption | truncate(100, True, '...') if post.caption else 'No caption' }}</p>
-                        {% if post.caption and post.caption | length > 100 %}
-                            <button class="show-more-btn">Show More</button>
-                        {% endif %}
-                        <p class="full-caption" style="display: none;">{{ post.caption if post.caption else 'No caption' }}</p>
-                        {% if post.tags %}
-                            <p class="post-tags"><strong>Tags:</strong> {{ post.tags }}</p>
-                        {% endif %}
-                        <p><a href="{{ post.post_url }}" target="_blank">View Original Post</a></p>
-                        <p class="post-date">Saved on: {{ post.download_date }}</p>
-                    </div>
-                </div>
+                {{ render_post_card(post) }}
             {% endfor %}
         </div>
-        <div class="pagination" style="text-align: center; margin-top: 20px;">
-            {% if current_page > 1 %}
-                <a href="/posts?q={{ query }}&page={{ current_page - 1 }}&limit={{ limit }}" style="margin-right: 10px; text-decoration: none; color: #007bff;">Previous</a>
-            {% endif %}
-            <span>Page {{ current_page }} of {{ total_pages }}</span>
-            {% if current_page < total_pages %}
-                <a href="/posts?q={{ query }}&page={{ current_page + 1 }}&limit={{ limit }}" style="margin-left: 10px; text-decoration: none; color: #007bff;">Next</a>
-            {% endif %}
-        </div>
+        {{ render_pagination(current_page, total_pages, query, sort_order) }}
     {% else %}
-        <p class="no-posts">No posts found.</p>
+        <div class="no-posts">
+            <p>No posts found.</p>
+            <a href="/scrape" class="bg-blue-600 text-white px-4 py-2 rounded">Scrape for new posts</a>
+        </div>
     {% endif %}
 
     <!-- Lightbox HTML -->
@@ -250,81 +46,5 @@
 {% endblock %}
 
 {% block scripts %}
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const postItems = document.querySelectorAll('.post-item');
-            const lightboxOverlay = document.getElementById('lightboxOverlay');
-            const lightboxMedia = document.getElementById('lightboxMedia');
-            const lightboxClose = document.getElementById('lightboxClose');
-
-            // Show More/Show Less functionality
-            document.querySelectorAll('.show-more-btn').forEach(button => {
-                button.addEventListener('click', function(event) {
-                    event.stopPropagation(); // Prevent event from bubbling to post-item
-                    const fullCaption = this.nextElementSibling; // The full-caption paragraph
-                    const previewCaption = this.previousElementSibling; // The caption-preview paragraph
-
-                    if (fullCaption.style.display === 'none') {
-                        fullCaption.style.display = 'block';
-                        previewCaption.style.display = 'none';
-                        this.textContent = 'Show Less';
-                    } else {
-                        fullCaption.style.display = 'none';
-                        previewCaption.style.display = 'block';
-                        this.textContent = 'Show More';
-                    }
-                });
-            });
-
-            postItems.forEach(item => {
-                item.addEventListener('click', function(event) {
-                    // Prevent opening lightbox if a link or the show-more button inside the post-item is clicked
-                    if (event.target.tagName === 'A' || event.target.classList.contains('show-more-btn')) {
-                        return;
-                    }
-
-                    const mediaPath = this.dataset.mediaPath;
-                    const mediaType = this.dataset.mediaType;
-
-                    lightboxMedia.innerHTML = ''; // Clear previous content
-
-                    if (mediaType === 'image') {
-                        const img = document.createElement('img');
-                        img.src = mediaPath;
-                        lightboxMedia.appendChild(img);
-                    } else if (mediaType === 'video') {
-                        const video = document.createElement('video');
-                        video.src = mediaPath;
-                        video.controls = true;
-                        video.autoplay = true; // Autoplay video in lightbox
-                        video.loop = true; // Loop video
-                        lightboxMedia.appendChild(video);
-                    }
-
-                    lightboxOverlay.classList.add('visible');
-                });
-            });
-
-            lightboxClose.addEventListener('click', function(event) {
-                event.preventDefault();
-                lightboxOverlay.classList.remove('visible');
-                // Pause video when closing lightbox
-                const videoInLightbox = lightboxMedia.querySelector('video');
-                if (videoInLightbox) {
-                    videoInLightbox.pause();
-                }
-            });
-
-            lightboxOverlay.addEventListener('click', function(event) {
-                if (event.target === lightboxOverlay) {
-                    lightboxOverlay.classList.remove('visible');
-                    // Pause video when closing lightbox
-                    const videoInLightbox = lightboxMedia.querySelector('video');
-                    if (videoInLightbox) {
-                        videoInLightbox.pause();
-                    }
-                }
-            });
-        });
-    </script>
+    <script src="{{ url_for('static', path='js/posts.js') }}"></script>
 {% endblock %}

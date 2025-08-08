@@ -2,83 +2,32 @@
 
 {% block title %}InstaSave - Home{% endblock %}
 
-{% block head %}
-    <style>
-        .date-range {
-            margin-bottom: 1.5rem;
-        }
-        .date-range label {
-            margin-right: 0.5rem;
-        }
-        .date-range select {
-            padding: 0.5rem;
-            font-size: 1rem;
-            border-radius: 6px;
-            margin-right: 1rem;
-            border: 1px solid #d1d5db;
-        }
-        #scrape-btn {
-            padding: 0.6rem 1.2rem;
-            background-color: #10b981;
-            color: white;
-            border: none;
-            border-radius: 6px;
-            font-size: 1rem;
-            cursor: pointer;
-            transition: background-color 0.2s;
-        }
-        #scrape-btn:hover {
-            background-color: #059669;
-        }
-        .status {
-            margin-top: 1.5rem;
-            padding: 1rem;
-            background-color: #e0f2f7;
-            border-left: 4px solid #0ea5e9;
-            color: #0c4a6e;
-            border-radius: 4px;
-        }
-    </style>
-{% endblock %}
-
 {% block content %}
-    <h1 style="font-size: 2.25rem; font-weight: bold; margin-bottom: 0.5rem;">InstaSave</h1>
-    <p style="margin-bottom: 2rem;">Scrape and view your saved Instagram posts.</p>
-    <div class="date-range">
-        <label for="date-range">Select date range:</label>
-        <select id="date-range">
-            <option value="all">All Time</option>
-            <option value="day">Past 24 Hours</option>
-            <option value="month">Past 30 Days</option>
-            <option value="most_recent">Most Recent Post</option>
-            <option value="last_hour">Last Hour</option>
-        </select>
+    <h1 class="text-3xl font-bold mb-4">Welcome to InstaSave!</h1>
+    <p class="text-lg mb-6">Your personal Instagram saved posts archive.</p>
+
+    <div class="bg-white p-6 rounded-lg shadow-md">
+        <h2 class="text-2xl font-semibold mb-4">Scrape Instagram Saved Posts</h2>
+        <p class="mb-4">Click the button below to start scraping your saved Instagram posts. This process runs in the background and may take some time depending on the number of saved posts.</p>
+
+        <form action="/scrape" method="post" class="inline-block">
+            <div class="mb-4">
+                <label for="date_range" class="block text-gray-700 text-sm font-bold mb-2">Scrape posts from:</label>
+                <select name="date_range" id="date_range" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                    <option value="all">All time</option>
+                    <option value="365">Last 365 days</option>
+                    <option value="180">Last 180 days</option>
+                    <option value="90">Last 90 days</option>
+                    <option value="30">Last 30 days</option>
+                    <option value="7">Last 7 days</option>
+                    <option value="1">Last 24 hours</option>
+                </select>
+            </div>
+            <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
+                Start Scrape
+            </button>
+        </form>
+
+        <p class="mt-4 text-sm text-gray-600">You can check the <a href="/scrape/status/live" class="text-blue-600 hover:underline">Live Status</a> page for progress.</p>
     </div>
-    <button id="scrape-btn">Scrape Saved Posts</button>
-    <div id="status" class="status"></div>
-{% endblock %}
-
-{% block scripts %}
-    <script>
-        const scrapeBtn = document.getElementById("scrape-btn");
-        const statusDiv = document.getElementById("status");
-        const dateRangeSelect = document.getElementById("date-range");
-
-        scrapeBtn.addEventListener("click", async () => {
-            const dateRange = dateRangeSelect.value;
-            statusDiv.textContent = "Starting scraper...";
-            const response = await fetch("/scrape", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify({ date_range: dateRange })
-            });
-            if (response.ok) {
-                window.location.href = '/scrape/status/live';
-            } else {
-                statusDiv.textContent = "Failed to start scraper.";
-            }
-        });
-    </script>
 {% endblock %}
