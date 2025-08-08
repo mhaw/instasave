@@ -3,36 +3,34 @@
 
 {% block title %}InstaSave - Saved Posts{% endblock %}
 
-{% block head %}
-    <link rel="stylesheet" href="{{ url_for('static', path='css/posts.css') }}">
-{% endblock %}
+{% block head %}{% endblock %}
 
 {% block content %}
     <h1>Saved Instagram Posts</h1>
 
-    <form method="get" action="/posts" class="mb-4 flex gap-2 items-center">
+    <form method="get" action="/posts" class="flex flex-wrap gap-4 items-center mb-6">
         <input type="text" name="q" value="{{ request.query_params.get('q', '') }}"
                placeholder="Search tags or captions"
-               class="border p-2 w-64 rounded" />
-        <label for="sortOrder" class="ml-4">Sort by:</label>
-        <select id="sortOrder" name="sort_order" onchange="this.form.submit()">
+               class="input flex-grow" />
+        <label for="sortOrder" class="meta">Sort by:</label>
+        <select id="sortOrder" name="sort_order" onchange="this.form.submit()" class="input">
             <option value="desc" {% if sort_order == "desc" %}selected{% endif %}>Newest First</option>
             <option value="asc" {% if sort_order == "asc" %}selected{% endif %}>Oldest First</option>
         </select>
-        <button class="bg-blue-600 text-white px-4 py-2 rounded">Search</button>
+        <button type="submit" class="btn btn-primary">Search</button>
     </form>
 
     {% if posts %}
-        <div class="post-grid">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {% for post in posts %}
                 {{ render_post_card(post) }}
             {% endfor %}
         </div>
         {{ render_pagination(current_page, total_pages, query, sort_order) }}
     {% else %}
-        <div class="no-posts">
-            <p>No posts found.</p>
-            <a href="/scrape" class="bg-blue-600 text-white px-4 py-2 rounded">Scrape for new posts</a>
+        <div class="text-center py-12">
+            <p class="text-lg text-slate-600 mb-4">No posts found.</p>
+            <a href="/scrape" class="btn btn-primary">Scrape for new posts</a>
         </div>
     {% endif %}
 

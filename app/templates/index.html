@@ -3,17 +3,17 @@
 {% block title %}InstaSave - Home{% endblock %}
 
 {% block content %}
-    <h1 class="text-3xl font-bold mb-4">Welcome to InstaSave!</h1>
-    <p class="text-lg mb-6">Your personal Instagram saved posts archive.</p>
+    <h1>Welcome to InstaSave!</h1>
+    <p>Your personal Instagram saved posts archive.</p>
 
-    <div class="bg-white p-6 rounded-lg shadow-md">
-        <h2 class="text-2xl font-semibold mb-4">Scrape Instagram Saved Posts</h2>
-        <p class="mb-4">Click the button below to start scraping your saved Instagram posts. This process runs in the background and may take some time depending on the number of saved posts.</p>
+    <div class="card">
+        <h2>Scrape Instagram Saved Posts</h2>
+        <p>Click the button below to start scraping your saved Instagram posts. This process runs in the background and may take some time depending on the number of saved posts.</p>
 
-        <form action="/scrape" method="post" class="inline-block">
-            <div class="mb-4">
-                <label for="date_range" class="block text-gray-700 text-sm font-bold mb-2">Scrape posts from:</label>
-                <select name="date_range" id="date_range" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+        <form action="/scrape" method="post">
+            <div class="form-group">
+                <label for="date_range">Scrape posts from:</label>
+                <select name="date_range" id="date_range" class="input">
                     <option value="all">All time</option>
                     <option value="365">Last 365 days</option>
                     <option value="180">Last 180 days</option>
@@ -23,11 +23,11 @@
                     <option value="1">Last 24 hours</option>
                 </select>
             </div>
-            <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
+            <button type="submit" class="btn btn-primary">
                 Start Scrape
             </button>
         </form>
 
-        <p class="mt-4 text-sm text-gray-600">You can check the <a href="/scrape/status/live" class="text-blue-600 hover:underline">Live Status</a> page for progress.</p>
+        <p class="meta">You can check the <a href="/scrape/status/live">Live Status</a> page for progress.</p>
     </div>
 {% endblock %}

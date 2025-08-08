@@ -3,8 +3,8 @@
 {% block title %}InstaSave - Scrape History{% endblock %}
 
 {% block content %}
-    <h1 class="text-2xl mb-4">Scrape History</h1>
-    <table class="table-auto w-full">
+    <h1>Scrape History</h1>
+    <table class="table-auto w-full card p-4">
       <thead>
         <tr>
           <th class="text-left">Log</th>
@@ -15,7 +15,7 @@
       </thead>
       <tbody>
         {% for entry in entries %}
-        <tr class="border-t">
+        <tr class="border-t border-border-200">
           <td>{{ entry.filename }}</td>
           <td>{{ entry.timestamp }}</td>
           <td>{{ entry.total }}</td>

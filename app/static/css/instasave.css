@@ -1,0 +1,225 @@
+:root{
+  --teal-800:#255C65; --teal-700:#2B6A73; --teal-600:#2F7681;
+  --mint-600:#63B38D; --mint-500:#7ACB92; --mint-400:#95D5A6;
+  --ink-900:#0E1B1F;  --slate-600:#5F6F76;
+  --border-200:#E3ECEF; --bg-50:#F6F9FB;
+}
+
+html,body{font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif}
+
+/* Base styles */
+body {
+    margin: 0;
+    padding: 0;
+    background-color: var(--bg-50);
+    color: var(--ink-900);
+    line-height: 1.5;
+}
+
+/* Headings */
+h1, h2, h3, h4, h5, h6 {
+    font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+    font-weight: 600; /* Inter SemiBold */
+    color: var(--teal-800);
+}
+
+h1 { font-size: 32px; line-height: 40px; }
+h2 { font-size: 24px; line-height: 32px; }
+h3 { font-size: 20px; line-height: 28px; }
+
+/* Body text */
+p {
+    font-size: 16px;
+    line-height: 24px;
+}
+
+/* Metadata/Caption */
+small, .meta, .caption {
+    font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+    font-weight: 500; /* Inter Medium */
+    font-size: 14px;
+    line-height: 20px;
+    color: var(--slate-600);
+}
+
+/* Links */
+a {
+    color: var(--teal-600);
+    text-decoration: none;
+}
+
+a:hover {
+    color: var(--teal-700);
+    text-decoration: underline;
+}
+
+/* Container */
+.container {
+    max-width: 900px;
+    margin: 2rem auto;
+    padding: 2rem;
+    background: #fff;
+    border-radius: 16px; /* Radius: 12–16 px for cards and inputs. */
+    box-shadow: 0 2px 6px rgba(0,0,0,0.06); /* Shadows: subtle; 0 2px 6px rgba(0,0,0,0.06). */
+}
+
+/* Header/Navbar */
+.navbar {
+    background: #fff;
+    border-bottom: 1px solid var(--border-200);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 2rem;
+}
+
+.navbar .logo img {
+    height: 32px; /* Adjust as needed based on logo design */
+}
+
+.nav-links {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    gap: 1.5rem; /* Spacing: 8px grid, so 1.5rem = 24px */
+}
+
+.nav-links a {
+    color: var(--teal-700);
+    text-decoration: none;
+    padding: 12px 8px;
+    font-weight: 600;
+}
+
+.nav-links a:hover {
+    color: var(--teal-600);
+}
+
+/* Buttons */
+.btn {
+    border-radius: 12px;
+    padding: 10px 14px;
+    border: 1px solid transparent;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.2s ease-out, border-color 0.2s ease-out, color 0.2s ease-out;
+}
+
+.btn-primary {
+    background: var(--teal-600);
+    color: #fff;
+}
+
+.btn-primary:hover {
+    background: var(--teal-700);
+}
+
+.btn-ghost {
+    background: #fff;
+    border-color: var(--border-200);
+    color: var(--teal-700);
+}
+
+.btn-ghost:hover {
+    border-color: var(--teal-600);
+    color: var(--teal-600);
+}
+
+/* Inputs */
+.input {
+    border: 1px solid var(--border-200);
+    border-radius: 12px;
+    padding: 10px 12px;
+    background: #fff;
+    color: var(--ink-900);
+    width: 100%; /* Adjust as needed */
+    box-sizing: border-box; /* Include padding and border in the element's total width and height */
+}
+
+.input:focus {
+    outline: 2px solid var(--mint-400);
+    border-color: var(--mint-500);
+}
+
+/* Cards (post tiles) */
+.card {
+    background: #fff;
+    border: 1px solid var(--border-200);
+    border-radius: 16px;
+    padding: 16px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+}
+
+.card h3 a {
+    color: var(--teal-700);
+}
+
+.card h3 a:hover {
+    color: var(--teal-600);
+}
+
+.card .meta {
+    color: var(--slate-600);
+    font-size: 14px;
+}
+
+.card img, .card video {
+    width: 100%;
+    height: auto;
+    border-radius: 12px;
+    display: block;
+}
+
+/* Tags */
+.tag {
+    display: inline-block;
+    padding: 4px 10px;
+    font-size: 12px;
+    border-radius: 999px; /* For pill shape */
+    border: 1px solid var(--border-200);
+    color: var(--teal-700);
+    background: #fff;
+}
+
+.tag--accent {
+    background: var(--mint-400);
+    border-color: transparent;
+    color: var(--ink-900);
+}
+
+/* Flash Messages */
+.flash-message {
+    padding: 12px 16px;
+    margin-bottom: 16px;
+    border-radius: 8px;
+    font-weight: 500;
+}
+
+.flash-message.success {
+    background-color: #d4edda; /* Light green */
+    color: #155724; /* Dark green */
+    border: 1px solid #c3e6cb;
+}
+
+.flash-message.error {
+    background-color: #f8d7da; /* Light red */
+    color: #721c24; /* Dark red */
+    border: 1px solid #f5c6cb;
+}
+
+.flash-message.info {
+    background-color: #d1ecf1; /* Light blue */
+    color: #0c5460; /* Dark blue */
+    border: 1px solid #bee5eb;
+}
+
+/* Footer */
+.footer {
+    text-align: center;
+    padding: 1.5rem;
+    margin-top: 2rem;
+    color: var(--slate-600);
+    font-size: 14px;
+    border-top: 1px solid var(--border-200);
+}

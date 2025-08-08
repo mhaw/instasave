@@ -2,22 +2,18 @@
 
 {% block title %}InstaSave - Scrape Status{% endblock %}
 
-{% block head %}
-    <meta http-equiv="refresh" content="2">
-    <style>
-        body { font-family: monospace; padding: 20px; }
-        .bar-container { width: 100%; background: #eee; }
-        .bar { height: 25px; background: #4caf50; }
-        #log-output { background:#111; color:#0f0; padding:1rem; border-radius:8px; white-space: pre-wrap; }
-    </style>
-{% endblock %}
+{% block head %}{% endblock %}
 
 {% block content %}
-    <h2>Scraping Progress</h2>
-    <pre>{{ status }}</pre>
+    <h1>Scraping Progress</h1>
+    <div class="card p-4 mb-6">
+        <pre class="text-sm text-ink-900">{{ status }}</pre>
+    </div>
 
-    <h3>Scraper Log</h3>
-    <pre id="log-output">{{ log_content }}</pre>
+    <h2>Scraper Log</h2>
+    <div class="card p-4">
+        <pre class="text-sm text-ink-900 bg-gray-900 text-green-400 p-4 rounded-lg overflow-auto" style="max-height: 400px;">{{ log_content }}</pre>
+    </div>
 {% endblock %}
 
 {% block scripts %}
