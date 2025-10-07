@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+
+{% block title %}InstaSave - Auth{% endblock %}
+
+{% block content %}
+  <h1>Authentication</h1>
+  <p>To reduce login challenges, you can paste your Instagram <code>sessionid</code> cookie here. The app will use it to authenticate and then persist a durable session file for reuse.</p>
+
+  <div class="card" style="padding:1rem;">
+    <form action="/auth/session" method="post">
+      <label for="sessionid">sessionid cookie value</label>
+      <input id="sessionid" name="sessionid" class="input" placeholder="paste sessionid here" style="width:100%; margin: 0.5rem 0;" />
+      <button type="submit" class="btn btn-primary">Save session</button>
+    </form>
+    <p class="meta" style="margin-top:0.5rem;">Saved to: {{ request.app.state.settings.IG_SESSIONID_PATH }}</p>
+  </div>
+
+  <h2>Test Login</h2>
+  <p>Click to attempt a login using cookies/sessionid/credentials in order, without running a scrape.</p>
+  <form method="post" action="/auth/test" style="margin-bottom:1rem;">
+    <button type="submit" class="btn btn-secondary">Test Login</button>
+  </form>
+
+  <h2>How to find sessionid</h2>
+  <ol>
+    <li>Login to instagram.com in your browser</li>
+    <li>Open DevTools → Application → Storage → Cookies → https://www.instagram.com</li>
+    <li>Copy the value of the <code>sessionid</code> cookie</li>
+    <li>Paste it above and save</li>
+  </ol>
+{% endblock %}

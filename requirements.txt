@@ -1,9 +1,11 @@
 fastapi==0.111.0
 pydantic==2.11.7
+pydantic-settings==2.6.0
 uvicorn==0.30.1
 jinja2
 requests
 python-dotenv
+python-multipart
 pytest
 instagrapi==2.2.1
 Pillow

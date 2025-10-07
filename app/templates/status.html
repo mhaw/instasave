@@ -6,23 +6,94 @@
 
 {% block content %}
     <h1>Scraping Progress</h1>
+    <div style="margin: 0.25rem 0 1rem 0;">
+        <span id="mode-badge" style="margin-right: 8px; padding: 2px 8px; border-radius: 999px; font-size: 0.85rem; background: #eef; color: #224;">Mode</span>
+        <span id="run-badge" style="padding: 2px 8px; border-radius: 999px; font-size: 0.85rem; background: #efe; color: #242;">Idle</span>
+    </div>
     <div class="card p-4 mb-6">
-        <pre class="text-sm text-ink-900">{{ status }}</pre>
+        <div style="display:flex; gap: 2rem; flex-wrap: wrap; align-items:flex-start;">
+            <div style="min-width: 320px;">
+                <h3>Status JSON</h3>
+                <pre id="status-json" class="text-sm text-ink-900">{{ status }}</pre>
+                <noscript>
+                    <p class="meta">JavaScript is disabled; status will not auto-update. Refresh the page to see new updates.</p>
+                </noscript>
+            </div>
+            <div>
+                <h3>Summary</h3>
+                <div class="meta">
+                {% set st = status_raw %}
+                {% set s = st.get('summary', {}) if st else {} %}
+                <ul>
+                        <li><strong>Logged in as:</strong> <span id="sum-user">{{ st.get('logged_in_user','-') }}</span></li>
+                        <li><strong>Processed:</strong> <span id="sum-processed">{{ s.get('processed', st.get('processed', 0)) }}</span></li>
+                        <li><strong>Skipped:</strong> <span id="sum-skipped">{{ s.get('skipped', 0) }}</span></li>
+                        <li><strong>Errors:</strong> <span id="sum-errors">{{ s.get('errors', 0) }}</span></li>
+                        <li><strong>Mode:</strong> <span id="sum-mode">{% if s.get('dry_run') %}Dry run{% else %}Full{% endif %}</span></li>
+                </ul>
+                </div>
+            </div>
+        </div>
     </div>
 
     <h2>Scraper Log</h2>
     <div class="card p-4">
-        <pre class="text-sm text-ink-900 bg-gray-900 text-green-400 p-4 rounded-lg overflow-auto" style="max-height: 400px;">{{ log_content }}</pre>
+        <form method="post" action="/scrape/stop" style="margin-bottom: 0.75rem;">
+            <button type="submit" class="btn btn-danger">Stop Scrape</button>
+        </form>
+        <pre id="log-output" class="text-sm text-ink-900 bg-gray-900 text-green-400 p-4 rounded-lg overflow-auto" style="max-height: 400px; white-space: pre-wrap;">{{ log_content }}</pre>
+        <noscript>
+            <p class="meta">JavaScript is disabled; logs will not auto-update. Refresh the page to see new log entries.</p>
+        </noscript>
     </div>
 {% endblock %}
 
 {% block scripts %}
     <script>
-        // This JS function won't accumulate logs due to page refresh,
-        // but is included as per instructions.
         const logEl = document.getElementById('log-output');
-        function appendLog(msg) {
-            logEl.textContent += new Date().toLocaleTimeString() + ' - ' + msg + '\n';
+        async function fetchLogs() {
+            try {
+                const res = await fetch('/scrape/logs?lines=400');
+                const text = await res.text();
+                logEl.textContent = text;
+                logEl.scrollTop = logEl.scrollHeight;
+            } catch (e) {
+                // ignore
+            }
         }
+        const statusEl = document.getElementById('status-json');
+        const elProcessed = document.getElementById('sum-processed');
+        const elSkipped = document.getElementById('sum-skipped');
+        const elErrors = document.getElementById('sum-errors');
+        const elUser = document.getElementById('sum-user');
+        const elMode = document.getElementById('sum-mode');
+        async function fetchStatus() {
+            try {
+                const res = await fetch('/scrape/status');
+                const data = await res.json();
+                statusEl.textContent = JSON.stringify(data, null, 2);
+                const s = data.summary || {};
+                if (elProcessed) elProcessed.textContent = (s.processed ?? data.processed ?? 0);
+                if (elSkipped) elSkipped.textContent = (s.skipped ?? 0);
+                if (elErrors) elErrors.textContent = (s.errors ?? 0);
+                if (elUser) elUser.textContent = (data.logged_in_user ?? '-');
+                if (elMode) elMode.textContent = (s.dry_run ? 'Dry run' : 'Full');
+                const modeBadge = document.getElementById('mode-badge');
+                const runBadge = document.getElementById('run-badge');
+                if (modeBadge) {
+                    modeBadge.textContent = s.dry_run ? 'Dry run' : 'Full';
+                    modeBadge.style.background = s.dry_run ? '#eef' : '#fee';
+                    modeBadge.style.color = s.dry_run ? '#224' : '#422';
+                }
+                const running = !!data.running;
+                if (runBadge) {
+                    runBadge.textContent = running ? 'Running' : 'Idle';
+                    runBadge.style.background = running ? '#ffe' : '#efe';
+                    runBadge.style.color = running ? '#663' : '#242';
+                }
+            } catch (_) { /* ignore */ }
+        }
+        setInterval(fetchLogs, 2000);
+        setInterval(fetchStatus, 2000);
     </script>
 {% endblock %}
