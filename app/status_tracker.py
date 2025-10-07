@@ -4,6 +4,7 @@ from pathlib import Path
 from datetime import datetime, timezone
 
 STATUS_PATH = Path("logs/status.json")
+STATUS_PATH.parent.mkdir(parents=True, exist_ok=True)
 MAX_HISTORY = 5
 
 def update_status(data: dict):

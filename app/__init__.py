@@ -1,0 +1,2 @@
+"""InstaSave application package."""
+

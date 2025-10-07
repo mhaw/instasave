@@ -23,7 +23,24 @@
     {% if posts %}
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {% for post in posts %}
-                {{ render_post_card(post) }}
+                <div class="post-card">
+                    {% set paths = post.media_paths if post.media_paths else [] %}
+                    <div class='media-gallery'>
+                      {% for mp in paths %}
+                        {% set media_url = url_for('serve_media_item', code=post.code, idx=loop.index0) %}
+                        {% set lower = mp|lower %}
+                        {% if lower.endswith('.mp4') or lower.endswith('.webm') or lower.endswith('.mov') %}
+                          <video controls style='max-width:100%;border-radius:8px;'><source src='{{ media_url }}'></video>
+                        {% else %}
+                          <img src='{{ media_url }}' alt='Post media' style='max-width:100%;border-radius:8px;'>
+                        {% endif %}
+                      {% endfor %}
+                    </div>
+                    <div class="post-card-caption">
+                        <p>{{ post.caption }}</p>
+                        <span class="post-card-timestamp">{{ post.timestamp|ts }}</span>
+                    </div>
+                </div>
             {% endfor %}
         </div>
         {{ render_pagination(current_page, total_pages, query, sort_order) }}
